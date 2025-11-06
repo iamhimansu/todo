@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "A simple todo app using React, Node utilizing type checking with Typescript",
   "keywords": [
-    "todo-app",
-    "node-react-typescript-todo"
+    "todo",
+    "node-react-todo"
   ],
   "homepage": "https://github.com/iamhimansu/todo#readme",
   "bugs": {
@@ -17,12 +17,9 @@
   "license": "ISC",
   "author": "Himanshu Raj Aman",
   "type": "module",
-  "main": "app/main.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node app/main.js",
+    "start": "node backend/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "express": "^5.1.0"
   }
 }
