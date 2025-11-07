@@ -9,5 +9,5 @@ app.get('/api/test', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log("Listening...");
+    console.log("Listening to server...");
 });
