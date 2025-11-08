@@ -1,22 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React, { useEffect, useState } from 'react';
+import axios from 'axios'; // We'll use this to make the API call
 function App() {
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    axios.get('http://localhost:5001/api/test')
+      .then(response => {
+        setMessage(response.data.message);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the data!', error);
+      });
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+        <h1>Welcome to Your Full-Stack App</h1>
+
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          <strong>Message from backend:</strong> {message}
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
       </header>
     </div>
   );
