@@ -25,11 +25,11 @@ function App() {
   const [checked, setChecked] = useState({});
 
   const isIntermediate = (id) => {
-    return !(typeof checked[id] === "undefined") && checked[id].value === 1
+    return !(typeof checked[id] === "undefined") && checked[id].count === 1
   }
 
   const isChecked = (id) => {
-    return !(typeof checked[id] === "undefined") && checked[id].value === 0
+    return !(typeof checked[id] === "undefined") && checked[id].count === 0
   }
 
   const handleToggle = (id) => () => {
@@ -38,13 +38,16 @@ function App() {
     if (typeof checkedItem === "undefined") {
       checked[id] = { count: 0 };
       checkedItem = checked[id];
+    } else {
+      if (checkedItem.count++ > 1) {
+        checkedItem.count = 0;
+      }
     }
 
-    if (++checkedItem.count > 1) {
-      checkedItem.count = 0;
-    }
+    const newChecked = { ...checked };
 
-    console.log(checked);
+    setChecked(newChecked);
+    console.log(checked, newChecked);
   };
 
   const addTodo = () => {
