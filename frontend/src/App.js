@@ -13,6 +13,7 @@ import {
   Container,
   TextField,
   Divider,
+  Typography,
 
 } from '@mui/material';
 import { AddBoxTwoTone, DeleteTwoTone } from '@mui/icons-material';
@@ -21,26 +22,39 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [totalTodos, setTotalTodos] = useState(0);
 
-  const [checked, setChecked] = useState([0]);
+  const [checked, setChecked] = useState({});
 
-  const handleToggle = (value) => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+  const isIntermediate = (id) => {
+    return !(typeof checked[id] === "undefined") && checked[id].value === 1
+  }
 
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
+  const isChecked = (id) => {
+    return !(typeof checked[id] === "undefined") && checked[id].value === 0
+  }
+
+  const handleToggle = (id) => () => {
+    let checkedItem = checked[id];
+
+    if (typeof checkedItem === "undefined") {
+      checked[id] = { count: 0 };
+      checkedItem = checked[id];
     }
 
-    setChecked(newChecked);
+    if (++checkedItem.count > 1) {
+      checkedItem.count = 0;
+    }
+
+    console.log(checked);
   };
 
   const addTodo = () => {
-    const todoValue = document.getElementById('new-todo').value;
-    if (typeof todoValue === "undefined") {
+    const todoField = document.getElementById('new-todo');
+
+    if (typeof todoField === "undefined") {
       return;
     }
+
+    const todoValue = todoField.value;
 
     if (todoValue.trim().length === 0) {
       return;
@@ -52,6 +66,8 @@ function App() {
       text: todoValue,
       completed: false
     });
+
+    todoField.value = '';
   }
 
   useEffect(() => {
@@ -66,12 +82,9 @@ function App() {
   }, []);
 
   return (
-    <Box disablePadding>
-      <Container maxWidth="lg" disablePadding>
-        <header className="App-header">
-          <h1>Welcome to Your Todo App</h1>
-        </header>
-
+    <Box>
+      <Container maxWidth="lg">
+        <Typography variant='h3' textAlign={'center'} padding={5}>Welcome to Your Todo App</Typography>
         <List sx={{ bgcolor: 'background.paper' }}>
           {todos.map((todo) => {
             const labelId = `checkbox-list-label-${todo}`;
@@ -86,14 +99,15 @@ function App() {
                 }
                 disablePadding
               >
-                <ListItemButton role={undefined} onClick={handleToggle(todo.id)} dense>
+                <ListItemButton onClick={handleToggle(todo.id)} dense>
                   <ListItemIcon>
                     <Checkbox
+                      indeterminate={isIntermediate(todo.id)}
                       edge="start"
-                      checked={checked.includes(todo.id)}
+                      checked={isChecked(todo.id)}
                       tabIndex={-1}
                       disableRipple
-                      inputProps={{ 'aria-labelledby': labelId }}
+                      slotProps={{ input: { 'aria-labelledby': labelId } }}
                     />
                   </ListItemIcon>
                   <ListItemText id={labelId} primary={todo.text} />
@@ -102,7 +116,7 @@ function App() {
             );
           })}
         </List>
-        <Divider />
+        {todos.length ? (<Divider></Divider>) : ''}
         <List sx={{ bgcolor: 'background.paper' }}>
           <ListItem
             secondaryAction={

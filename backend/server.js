@@ -9,9 +9,9 @@ app.use(cors());
 app.use(express.json());
 
 let todos = [
-    { id: 1, text: "Learn Node.js", completed: false },
-    { id: 2, text: "Build a React app", completed: false },
-    { id: 3, text: "Connect them both", completed: false }
+    // { id: 1, text: "Learn Node.js", completed: false },
+    // { id: 2, text: "Build a React app", completed: true },
+    // { id: 3, text: "Connect them both", completed: false }
 ];
 
 app.get('/api/test', (req, res) => {
