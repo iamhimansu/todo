@@ -25,11 +25,11 @@ function App() {
   const [checked, setChecked] = useState({});
 
   const isIntermediate = (id) => {
-    return !(typeof checked[id] === "undefined") && checked[id].count === 1
+    return !(typeof checked[id] === "undefined") && checked[id].count === 0
   }
 
   const isChecked = (id) => {
-    return !(typeof checked[id] === "undefined") && checked[id].count === 0
+    return !(typeof checked[id] === "undefined") && checked[id].count === 1
   }
 
   const handleToggle = (id) => () => {
@@ -94,6 +94,7 @@ function App() {
 
             return (
               <ListItem
+                sx={{ backgroundColor: isIntermediate(todo.id) ? '#ecf2ff' : (isChecked(todo.id) ? '#e9ffe3' : null) }}
                 key={todo.id}
                 secondaryAction={
                   <IconButton edge="end" aria-label="comments">
@@ -106,6 +107,7 @@ function App() {
                   <ListItemIcon>
                     <Checkbox
                       indeterminate={isIntermediate(todo.id)}
+
                       edge="start"
                       checked={isChecked(todo.id)}
                       tabIndex={-1}
