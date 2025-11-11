@@ -13,6 +13,9 @@ import {
   TextField,
   Divider,
   Typography,
+  Stack,
+  Alert,
+  Button,
 
 } from '@mui/material';
 import { AddBoxTwoTone, DeleteTwoTone, EditTwoTone, TimerTwoTone } from '@mui/icons-material';
@@ -21,6 +24,8 @@ function App() {
   const [todos, setTodos] = useState([]);
 
   const [checked, setChecked] = useState({});
+
+  const [alertStacks, setAlertStacks] = useState([]);
 
   const isIntermediate = (id) => {
     return !(typeof checked[id] === "undefined") && checked[id].state === "intermediate"
@@ -91,6 +96,7 @@ function App() {
       .then(response => {
         // Add the new todo (returned from server) to our state
         setTodos([...todos, response.data]);
+        addAlertStacks('Todo Added');
         // Clear the input field
         todoField.value = '';
       })
@@ -98,6 +104,11 @@ function App() {
         console.error('Error creating todo:', error);
       });
 
+  }
+
+  const addAlertStacks = (message) => {
+    const alerts = [message, ...alertStacks];
+    setAlertStacks(alerts);
   }
 
   useEffect(() => {
@@ -115,10 +126,29 @@ function App() {
       });
   }, []);
 
+
   return (
     <Box>
       <Container maxWidth="lg">
         <Typography variant='h3' textAlign={'center'} padding={5}>Welcome to Your Todo App</Typography>
+        <Stack sx={{ width: '100%' }} spacing={2}>
+          {
+            alertStacks.map((message, i) => {
+              return (<Alert
+                variant='outlined'
+                severity="success"
+                action={
+                  <Button color="inherit" size="small">
+                    UNDO
+                  </Button>
+                }
+              >
+                {message}
+              </Alert>
+              )
+            })
+          }
+        </Stack>
         <List
           sx={{ bgcolor: 'background.paper' }}>
           {todos.map((todo) => {
