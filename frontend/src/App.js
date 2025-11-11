@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-
 import axios from 'axios'; // We'll use this to make the API call
 import {
   List,
@@ -16,38 +15,63 @@ import {
   Typography,
 
 } from '@mui/material';
-import { AddBoxTwoTone, DeleteTwoTone } from '@mui/icons-material';
+import { AddBoxTwoTone, DeleteTwoTone, EditTwoTone, TimerTwoTone } from '@mui/icons-material';
 
 function App() {
   const [todos, setTodos] = useState([]);
-  const [totalTodos, setTotalTodos] = useState(0);
 
   const [checked, setChecked] = useState({});
 
   const isIntermediate = (id) => {
-    return !(typeof checked[id] === "undefined") && checked[id].count === 0
+    return !(typeof checked[id] === "undefined") && checked[id].state === "intermediate"
   }
 
-  const isChecked = (id) => {
-    return !(typeof checked[id] === "undefined") && checked[id].count === 1
+  const isCompleted = (id) => {
+    return !(typeof checked[id] === "undefined") && checked[id].state === "completed"
   }
 
   const handleToggle = (id) => () => {
     let checkedItem = checked[id];
 
     if (typeof checkedItem === "undefined") {
-      checked[id] = { count: 0 };
+      checked[id] = { count: 1, state: "intermediate" };
       checkedItem = checked[id];
     } else {
-      if (checkedItem.count++ > 1) {
-        checkedItem.count = 0;
-      }
+      checkedItem.count++;
     }
 
+    switch (checkedItem.count) {
+      case 1:
+        checkedItem.state = "intermediate";
+        break;
+      case 2:
+        checkedItem.state = "completed";
+        break;
+      case 3:
+        checkedItem.state = "pending";
+        checkedItem.count = 0;
+        break;
+
+      default:
+        checkedItem.state = "pending";
+        checkedItem.count = 0;
+        break;
+    }
+
+    /**
+     * Update in db also
+     */
+
+    axios.post(`http://localhost:5001/api/todos-state/${id}`, { state: checkedItem.state })
+      .then(res => {
+        console.log(res.data);
+      })
+      .catch(err => {
+        console.log(err);
+      })
     const newChecked = { ...checked };
 
     setChecked(newChecked);
-    console.log(checked, newChecked);
   };
 
   const addTodo = () => {
@@ -57,27 +81,34 @@ function App() {
       return;
     }
 
-    const todoValue = todoField.value;
+    const todoText = todoField.value;
 
-    if (todoValue.trim().length === 0) {
+    if (todoText.trim().length === 0) {
       return;
     }
 
-    setTotalTodos(totalTodos + 1);
-    todos.push({
-      id: totalTodos,
-      text: todoValue,
-      completed: false
-    });
+    axios.post("http://localhost:5001/api/todos", { text: todoText })
+      .then(response => {
+        // Add the new todo (returned from server) to our state
+        setTodos([...todos, response.data]);
+        // Clear the input field
+        todoField.value = '';
+      })
+      .catch(error => {
+        console.error('Error creating todo:', error);
+      });
 
-    todoField.value = '';
   }
 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/test')
+    axios.get("http://localhost:5001/api/todos")
       .then(response => {
         setTodos(response.data);
-        setTotalTodos(response.data.length);
+        const todosReduced = response.data.reduce((p, c, i) => {
+          p[c._id] = c;
+          return p;
+        }, {});
+        setChecked(todosReduced);
       })
       .catch(error => {
         console.error('There was an error fetching the data!', error);
@@ -88,28 +119,37 @@ function App() {
     <Box>
       <Container maxWidth="lg">
         <Typography variant='h3' textAlign={'center'} padding={5}>Welcome to Your Todo App</Typography>
-        <List sx={{ bgcolor: 'background.paper' }}>
+        <List
+          sx={{ bgcolor: 'background.paper' }}>
           {todos.map((todo) => {
             const labelId = `checkbox-list-label-${todo}`;
-
+            const todoId = todo._id;
             return (
               <ListItem
-                sx={{ backgroundColor: isIntermediate(todo.id) ? '#ecf2ff' : (isChecked(todo.id) ? '#e9ffe3' : null) }}
+                sx={{ backgroundColor: isIntermediate(todoId) ? '#ecf2ff' : (isCompleted(todoId) ? '#e9ffe3' : null) }}
                 key={todo.id}
                 secondaryAction={
-                  <IconButton edge="end" aria-label="comments">
-                    <DeleteTwoTone />
-                  </IconButton>
+                  <Box edge="end">
+                    <IconButton>
+                      <TimerTwoTone />
+                    </IconButton>
+                    <IconButton>
+                      <EditTwoTone />
+                    </IconButton>
+                    <IconButton>
+                      <DeleteTwoTone />
+                    </IconButton>
+                  </Box>
                 }
                 disablePadding
               >
-                <ListItemButton onClick={handleToggle(todo.id)} dense>
+                <ListItemButton onClick={handleToggle(todoId)} dense>
                   <ListItemIcon>
                     <Checkbox
-                      indeterminate={isIntermediate(todo.id)}
+                      indeterminate={isIntermediate(todoId)}
 
                       edge="start"
-                      checked={isChecked(todo.id)}
+                      checked={isCompleted(todoId)}
                       tabIndex={-1}
                       disableRipple
                       slotProps={{ input: { 'aria-labelledby': labelId } }}
@@ -124,14 +164,16 @@ function App() {
         {todos.length ? (<Divider></Divider>) : ''}
         <List sx={{ bgcolor: 'background.paper' }}>
           <ListItem
+            key='add-todo'
             secondaryAction={
               <IconButton edge="end" aria-label="comments" onClick={addTodo}>
                 <AddBoxTwoTone />
               </IconButton>
+
             }
             disablePadding
           >
-            <ListItemText>
+            <ListItemText key='add-todo'>
               <TextField
                 fullWidth
                 multiline
