@@ -1,2 +1,7 @@
 # todo
-A simple todo app using React, Node utilizing type checking with Typescript
+Todo App: MERN
+
+Features: 
+    - Add todo
+    - Mark Todo
+    - Delete Todo
