@@ -15,10 +15,10 @@ import {
   Typography,
   Stack,
   Alert,
-  Button,
+  Collapse,
 
 } from '@mui/material';
-import { AddBoxTwoTone, DeleteTwoTone, EditTwoTone, TimerTwoTone } from '@mui/icons-material';
+import { AddBoxTwoTone, CloseTwoTone, DeleteTwoTone } from '@mui/icons-material';
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -26,6 +26,8 @@ function App() {
   const [checked, setChecked] = useState({});
 
   const [alertStacks, setAlertStacks] = useState([]);
+
+  const [open, setOpen] = useState(true);
 
   const isIntermediate = (id) => {
     return !(typeof checked[id] === "undefined") && checked[id].state === "intermediate"
@@ -35,7 +37,7 @@ function App() {
     return !(typeof checked[id] === "undefined") && checked[id].state === "completed"
   }
 
-  const handleToggle = (id) => () => {
+  const handleToggle = (id) => {
     let checkedItem = checked[id];
 
     if (typeof checkedItem === "undefined") {
@@ -77,6 +79,17 @@ function App() {
     const newChecked = { ...checked };
 
     setChecked(newChecked);
+  };
+
+  const handleDelete = (id) => {
+    axios.delete(`http://localhost:5001/api/todos/delete/${id}`)
+      .then(res => {
+        setTodos(todos.filter(todo => todo._id !== id));
+        addAlertStacks('Todo Deleted!');
+      })
+      .catch(err => {
+        console.log(err);
+      })
   };
 
   const addTodo = () => {
@@ -132,19 +145,30 @@ function App() {
       <Container maxWidth="lg">
         <Typography variant='h3' textAlign={'center'} padding={5}>Welcome to Your Todo App</Typography>
         <Stack sx={{ width: '100%' }} spacing={2}>
+
           {
             alertStacks.map((message, i) => {
-              return (<Alert
-                variant='outlined'
-                severity="success"
-                action={
-                  <Button color="inherit" size="small">
-                    UNDO
-                  </Button>
-                }
-              >
-                {message}
-              </Alert>
+              return (
+                <Collapse in={open}>
+                  <Alert
+                    variant='outlined'
+                    severity="success"
+                    action={
+                      <IconButton
+                        aria-label="close"
+                        color="inherit"
+                        size="small"
+                        onClick={() => {
+                          setOpen(false);
+                        }}
+                      >
+                        <CloseTwoTone fontSize="inherit" />
+                      </IconButton>
+                    }
+                  >
+                    {message}
+                  </Alert>
+                </Collapse>
               )
             })
           }
@@ -161,23 +185,16 @@ function App() {
                 secondaryAction={
                   <Box edge="end">
                     <IconButton>
-                      <TimerTwoTone />
-                    </IconButton>
-                    <IconButton>
-                      <EditTwoTone />
-                    </IconButton>
-                    <IconButton>
-                      <DeleteTwoTone />
+                      <DeleteTwoTone onClick={() => handleDelete(todoId)} ></DeleteTwoTone>
                     </IconButton>
                   </Box>
                 }
                 disablePadding
               >
-                <ListItemButton onClick={handleToggle(todoId)} dense>
+                <ListItemButton onClick={() => handleToggle(todoId)} dense>
                   <ListItemIcon>
                     <Checkbox
                       indeterminate={isIntermediate(todoId)}
-
                       edge="start"
                       checked={isCompleted(todoId)}
                       tabIndex={-1}

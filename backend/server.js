@@ -53,6 +53,20 @@ app.post('/api/todos', async (req, res) => {
     }
 });
 
+app.delete('/api/todos/delete/:id', async (req, res) => {
+    try {
+        const deletedTodo = await Todo.findByIdAndDelete(req.params.id);
+
+        if (!deletedTodo) {
+            return res.status(444).json({ error: "Todo not found" });
+        }
+
+        res.status(204).send();
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/todos-state/:id', async (req, res) => {
     const id = req.params.id;
     const state = req.body.state;
@@ -65,7 +79,8 @@ app.post('/api/todos-state/:id', async (req, res) => {
 
     if (todo) {
         todo.state = state;
-        res.json(todo);
+        return res.json(todo);
+
     }
 
     res.json({ error: "Unable to update state" });
