@@ -41,12 +41,14 @@ function App() {
     let checkedItem = checked[id];
 
     if (typeof checkedItem === "undefined") {
-      checked[id] = { count: 1, state: "intermediate" };
+      checked[id] = { count: 0, state: "pending" };
       checkedItem = checked[id];
-    } else {
-      checkedItem.count++;
     }
 
+    //Was in intermediate
+    checkedItem.count++;
+
+    //Now in completed
     switch (checkedItem.count) {
       case 1:
         checkedItem.state = "intermediate";
@@ -55,10 +57,6 @@ function App() {
         checkedItem.state = "completed";
         break;
       case 3:
-        checkedItem.state = "pending";
-        checkedItem.count = 0;
-        break;
-
       default:
         checkedItem.state = "pending";
         checkedItem.count = 0;
@@ -71,14 +69,12 @@ function App() {
 
     axios.post(`http://localhost:5001/api/todos-state/${id}`, { state: checkedItem.state })
       .then(res => {
-        console.log(res.data);
+        const newChecked = { ...checked };
+        setChecked(newChecked);
       })
       .catch(err => {
         console.log(err);
       })
-    const newChecked = { ...checked };
-
-    setChecked(newChecked);
   };
 
   const handleDelete = (id) => {
